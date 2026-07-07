@@ -642,6 +642,9 @@ const crashReporter = {
 };
 
 const net = {
+  isOnline(): boolean {
+    return true;
+  },
   async fetch(input: string | URL, init?: RequestInit): Promise<Response> {
     // log("net.fetch", [input, init]);
     if (typeof globalThis.fetch === "function") {

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export PATH="/opt/homebrew/bin:/Applications/Codex.app/Contents/Resources:/usr/bin:/bin:/usr/sbin:/sbin"
+
+if [[ "${1:-}" != "app-server" ]]; then
+  exec "/Applications/Codex.app/Contents/Resources/codex" "$@"
+fi
+
+shift || true
+export CODEX_UNIX_SOCKET="/Users/deletoe/workspace/codex-web/codex-web-app-server.sock"
+exec "/Users/deletoe/workspace/codex-web/scripts/codex_remote_proxy" app-server
