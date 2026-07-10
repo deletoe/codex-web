@@ -1,33 +1,40 @@
---- a/webview/assets/chunk-LFPYN7LY-CRkYzDF0.js
-+++ b/webview/assets/chunk-LFPYN7LY-CRkYzDF0.js
-@@ -1058,11 +1058,16 @@
-   unstable_useTransitions: o,
+--- a/webview/assets/app-initial~app-main~hotkey-window-thread-page~thread-app-shell-chrome~header~remote-conver~h59fr3q5-Cm3GYhJA.js
++++ b/webview/assets/app-initial~app-main~hotkey-window-thread-page~thread-app-shell-chrome~header~remote-conver~h59fr3q5-Cm3GYhJA.js
+@@ -90247,11 +90247,16 @@
+   unstable_useTransitions: i,
  }) {
-   let s = r.useRef();
--  s.current ??= a({ initialEntries: n, initialIndex: i, v5Compat: !0 });
-+  s.current ??= a({
+   let a = z4.useRef();
+-  a.current ??= Ctt({ initialEntries: n, initialIndex: r, v5Compat: !0 });
++  a.current ??= Ctt({
 +    initialEntries: n ?? [window.__ELECTRON_SHIM__.initialRoute],
-+    initialIndex: i,
++    initialIndex: r,
 +    v5Compat: !0,
 +  });
-   let c = s.current,
-     [l, u] = r.useState({ action: c.action, location: c.location }),
-     d = r.useCallback(
+   let o = a.current,
+     [s, c] = z4.useState({ action: o.action, location: o.location }),
+     l = z4.useCallback(
        (e) => {
 +        window.__ELECTRON_SHIM__.onMemoryNavigationChanged(e);
-         o === !1 ? u(e) : r.startTransition(() => u(e));
+         i === !1 ? c(e) : z4.startTransition(() => c(e));
        },
-       [o],
---- a/webview/assets/apps-Au-fp4y1.js
-+++ b/webview/assets/apps-Au-fp4y1.js
-@@ -2058,8 +2058,8 @@
-   if (e == null) throw Error(`AppShellLayoutMotionContext is missing`);
-   return e;
- }
--var Yi = j(M, !0),
--  Xi = j(M, () => new Jt(1)),
-+var Yi = j(M, window.__ELECTRON_SHIM__.initialSidebarState),
-+  Xi = j(M, () => new Jt(window.__ELECTRON_SHIM__.initialSidebarState)),
-   Zi = j(F, !1),
-   Qi = j(F, () => new Jt(0)),
-   $i = j(F, !1),
+       [i],
+--- a/webview/assets/app-initial~app-main~hotkey-window-thread-page~thread-app-shell-chrome~remote-conversation-~gjotggjg--gGzOgo3.js
++++ b/webview/assets/app-initial~app-main~hotkey-window-thread-page~thread-app-shell-chrome~remote-conversation-~gjotggjg--gGzOgo3.js
+@@ -467,7 +467,7 @@
+       Wt(),
+       (rn = `app-shell-bottom-panel-launcher-visible`),
+       (an = 100),
+-      (on = g(H, !0)),
++      (on = g(H, window.__ELECTRON_SHIM__.initialSidebarState)),
+       (sn = g(H, !0)),
+       (cn = g(H, !1)),
+       (ln = g(H, !1, {
+@@ -510,7 +510,7 @@
+           };
+         },
+       })),
+-      (dn = g(H, () => new R(1))),
++      (dn = g(H, () => new R(window.__ELECTRON_SHIM__.initialSidebarState))),
+       (fn = g(H, zt)),
+       (pn = v(rn, !0)),
+       (mn = g(G, !1)),
