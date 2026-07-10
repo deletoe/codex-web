@@ -1,11 +1,11 @@
---- a/webview/assets/filesystem-media-src-BngrzgPI.js
-+++ b/webview/assets/filesystem-media-src-BngrzgPI.js
-@@ -2,7 +2,7 @@
- var n = `app://fs`,
-   r = `/@fs`;
- function i(e) {
--  return `${n}${o(e)}`;
-+  return o(e);
+--- a/webview/assets/app-initial~app-main~onboarding-page~hotkey-window-thread-page~quick-chat-window-page~chatg~k0ede4gb-BfuFOm2j.js
++++ b/webview/assets/app-initial~app-main~onboarding-page~hotkey-window-thread-page~quick-chat-window-page~chatg~k0ede4gb-BfuFOm2j.js
+@@ -120437,7 +120437,7 @@
+         })));
+   });
+ function yF(e) {
+-  return `${Dot}${Eot(e)}`;
++  return Eot(e);
  }
- function a(e) {
-   return o(e);
+ function Tot(e) {
+   return Eot(e);

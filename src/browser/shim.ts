@@ -7,7 +7,6 @@ import {
   isLocalFilePickerMessage,
 } from "./files";
 import {
-  installWorkspaceRootDialog,
   openSelectWorkspaceRootDialog,
   type WorkspaceDirectoryEntries,
 } from "./workspace-root-dialog";
@@ -66,6 +65,26 @@ type MainToRendererMessage =
 
 const RECONNECT_DELAY_MS = 1_000;
 
+function installRandomUuidPolyfill(): void {
+  const browserCrypto = globalThis.crypto;
+  if (!browserCrypto || typeof browserCrypto.randomUUID === "function") {
+    return;
+  }
+
+  Object.defineProperty(browserCrypto, "randomUUID", {
+    configurable: true,
+    value: (): `${string}-${string}-${string}-${string}-${string}` => {
+      const bytes = browserCrypto.getRandomValues(new Uint8Array(16));
+      bytes[6] = (bytes[6] & 0x0f) | 0x40;
+      bytes[8] = (bytes[8] & 0x3f) | 0x80;
+      const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0"));
+      return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex.slice(6, 8).join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10).join("")}`;
+    },
+  });
+}
+
+installRandomUuidPolyfill();
+
 type MemoryNavigationChange = {
   action: "POP" | "PUSH" | "REPLACE";
   delta: number;
@@ -82,6 +101,24 @@ type ElectronShimState = {
   initialRoute?: string;
   initialSidebarState?: boolean;
   closeSidebar?: () => void;
+  services?: {
+    requestUserInputAutoResolution?: {
+      recordConversationActivity?: (args: {
+        conversationId: string;
+        hostId: string;
+      }) => void;
+      setConversationPresented?: (args: {
+        conversationId: string;
+        hostId: string;
+        presented: boolean;
+      }) => void;
+      snooze?: (args: {
+        conversationId: string;
+        hostId: string;
+        requestId: string;
+      }) => void;
+    };
+  };
   onMemoryNavigationChanged?: (navigation: MemoryNavigationChange) => void;
   overrideAdapter?: {
     getGateOverride?: (
@@ -313,12 +350,41 @@ const mobileMediaQuery = matchMedia("(max-width: 768px)");
 const initialSidebarState = !mobileMediaQuery.matches;
 const electronShim = (window.__ELECTRON_SHIM__ ??= {});
 
+Object.assign(globalThis, {
+  process: {
+    arch: "arm64",
+    platform: "darwin",
+    versions: {
+      electron: "41.2.0",
+    },
+  },
+});
+
+electronShim.services = {
+  ...electronShim.services,
+  requestUserInputAutoResolution: {
+    ...electronShim.services?.requestUserInputAutoResolution,
+    recordConversationActivity: () => undefined,
+    setConversationPresented: () => undefined,
+    snooze: () => undefined,
+  },
+};
+
 electronShim.overrideAdapter = {
   getGateOverride(e) {
-    if (e.name === "2929582856") { // codex_app_sunset
+    if (e.name === "2929582856") {
+      // codex_app_sunset
       return {
         ...e,
         value: false,
+      };
+    }
+
+    if (e.name === "2478676115") {
+      // Profile Selector
+      return {
+        ...e,
+        value: true,
       };
     }
 
@@ -422,6 +488,21 @@ export const ipcRenderer = {
       args,
     });
   },
+  postMessage(
+    channel: string,
+    message: unknown,
+    transfer?: Transferable[],
+  ): void {
+    if (transfer && transfer.length > 0) {
+      return;
+    }
+
+    enqueueMessage({
+      type: "ipc-renderer-send",
+      channel,
+      args: [message],
+    });
+  },
   sendSync(channel: string, ..._args: unknown[]): unknown {
     if (channel === "codex_desktop:get-sentry-init-options") {
       return {
@@ -437,38 +518,23 @@ export const ipcRenderer = {
       return buildFlavor;
     }
 
+    if (channel === "codex_desktop:get-uses-owl-app-shell") {
+      return false;
+    }
+
     if (channel === "codex_desktop:get-shared-object-snapshot") {
       return {
-        host_config: {
-          id: "local",
-          display_name: "Local",
-          kind: "local",
-        },
-        remote_connections: [],
-        remote_control_connections: [],
+        host_config: { id: "local", display_name: "Local", kind: "local" },
+        remote_ssh_connections: [],
+        remote_wsl_connections: [],
         remote_control_connections_state: {
           available: false,
+          accessRequired: false,
           authRequired: false,
+          clientAuthorized: false,
         },
+        local_remote_control_client_id: null,
         pending_worktrees: [],
-        statsig_default_enable_features: {
-          enable_request_compression: true,
-          collaboration_modes: true,
-          personality: true,
-          request_rule: true,
-          fast_mode: true,
-          image_generation: true,
-          image_detail_original: true,
-          workspace_dependencies: true,
-          guardian_approval: true,
-          apps: true,
-          plugins: true,
-          tool_search: true,
-          tool_suggest: false,
-          tool_call_mcp_elicitation: true,
-          memories: false,
-          realtime_conversation: false,
-        },
       };
     }
 
